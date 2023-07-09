@@ -1,6 +1,38 @@
-[InternetShortcut]
-URL=http://localhost:8889/notebooks/Internshala-web%20scrapping.ipynb
-IDList=
-HotKey=0
-IconFile=C:\Users\Bhramara Mutte\AppData\Local\Mozilla\Firefox\Profiles\k19c0m8z.default-release\shortcutCache\cPm2P_bOC1SiuHONKEABEA==.ico
-IconIndex=0
+from bs4 import BeautifulSoup
+import requests
+import pandas as pd
+header={'user-agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'}
+url_search='https://internshala.com/internships/'
+internship=pd.DataFrame()
+for j in range(1,100):
+    url_search='https://internshala.com/internships/page-{}/.format(j)'
+    soup=BeautifulSoup(req,'lxml')
+    data=soup.find_all('div',class_='internship_meta')
+    role=[]
+    company=[]
+    location=[]
+    start_date=[]
+    duration=[]
+    stipend=[]
+    for i in data:
+        role.append(i.find('h3').text.strip('\n'))
+        company.append(i.find('h4').text.strip('\n'))
+        loc=i.find_all('a',class_='location_link view_detail_button')
+        s=''
+        for k in loc:
+            s+=k.text+','
+        s=s[:-1]
+        location.append(s)
+        start_date.append(i.find('span',class_='start_immediately_desktop').text)
+        duration.append(i.find_all('div',class_='item_body')[1].text.strip())
+        stipend.append(i.find('span',class_='stipend').text)
+        
+    d={'role':role,'company':company,'location':location,
+'start_date':start_date,
+'duration':duration,
+'stipend':stipend}
+    df=pd.DataFrame(d)
+    frames = [internship, df]
+ 
+    internship=pd.concat(frames)
+internship.to_csv('internship.csv')
